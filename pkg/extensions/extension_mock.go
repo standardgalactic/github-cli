@@ -17,6 +17,12 @@ var _ Extension = &ExtensionMock{}
 //
 // 		// make and configure a mocked Extension
 // 		mockedExtension := &ExtensionMock{
+// 			IsBinFunc: func() bool {
+// 				panic("mock out the IsBin method")
+// 			},
+// 			IsGitFunc: func() bool {
+// 				panic("mock out the IsGit method")
+// 			},
 // 			IsLocalFunc: func() bool {
 // 				panic("mock out the IsLocal method")
 // 			},
@@ -39,6 +45,12 @@ var _ Extension = &ExtensionMock{}
 //
 // 	}
 type ExtensionMock struct {
+	// IsBinFunc mocks the IsBin method.
+	IsBinFunc func() bool
+
+	// IsGitFunc mocks the IsGit method.
+	IsGitFunc func() bool
+
 	// IsLocalFunc mocks the IsLocal method.
 	IsLocalFunc func() bool
 
@@ -56,6 +68,12 @@ type ExtensionMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// IsBin holds details about calls to the IsBin method.
+		IsBin []struct {
+		}
+		// IsGit holds details about calls to the IsGit method.
+		IsGit []struct {
+		}
 		// IsLocal holds details about calls to the IsLocal method.
 		IsLocal []struct {
 		}
@@ -72,11 +90,65 @@ type ExtensionMock struct {
 		UpdateAvailable []struct {
 		}
 	}
+	lockIsBin           sync.RWMutex
+	lockIsGit           sync.RWMutex
 	lockIsLocal         sync.RWMutex
 	lockName            sync.RWMutex
 	lockPath            sync.RWMutex
 	lockURL             sync.RWMutex
 	lockUpdateAvailable sync.RWMutex
+}
+
+// IsBin calls IsBinFunc.
+func (mock *ExtensionMock) IsBin() bool {
+	if mock.IsBinFunc == nil {
+		panic("ExtensionMock.IsBinFunc: method is nil but Extension.IsBin was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockIsBin.Lock()
+	mock.calls.IsBin = append(mock.calls.IsBin, callInfo)
+	mock.lockIsBin.Unlock()
+	return mock.IsBinFunc()
+}
+
+// IsBinCalls gets all the calls that were made to IsBin.
+// Check the length with:
+//     len(mockedExtension.IsBinCalls())
+func (mock *ExtensionMock) IsBinCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockIsBin.RLock()
+	calls = mock.calls.IsBin
+	mock.lockIsBin.RUnlock()
+	return calls
+}
+
+// IsGit calls IsGitFunc.
+func (mock *ExtensionMock) IsGit() bool {
+	if mock.IsGitFunc == nil {
+		panic("ExtensionMock.IsGitFunc: method is nil but Extension.IsGit was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockIsGit.Lock()
+	mock.calls.IsGit = append(mock.calls.IsGit, callInfo)
+	mock.lockIsGit.Unlock()
+	return mock.IsGitFunc()
+}
+
+// IsGitCalls gets all the calls that were made to IsGit.
+// Check the length with:
+//     len(mockedExtension.IsGitCalls())
+func (mock *ExtensionMock) IsGitCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockIsGit.RLock()
+	calls = mock.calls.IsGit
+	mock.lockIsGit.RUnlock()
+	return calls
 }
 
 // IsLocal calls IsLocalFunc.
