@@ -28,6 +28,16 @@ func (e *Extension) IsLocal() bool {
 	return e.isLocal
 }
 
+func (e *Extension) IsBin() bool {
+	// TODO
+	return false
+}
+
+func (e *Extension) IsGit() bool {
+	// TODO
+	return false
+}
+
 func (e *Extension) UpdateAvailable() bool {
 	return e.updateAvailable
 }

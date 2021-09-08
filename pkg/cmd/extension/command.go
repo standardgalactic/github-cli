@@ -110,7 +110,7 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 					return err
 				}
 				protocol, _ := cfg.Get(repo.RepoHost(), "git_protocol")
-				return m.Install(ghrepo.FormatRemoteURL(repo, protocol), io.Out, io.ErrOut)
+				return m.InstallGit(ghrepo.FormatRemoteURL(repo, protocol), io.Out, io.ErrOut)
 			},
 		},
 		func() *cobra.Command {

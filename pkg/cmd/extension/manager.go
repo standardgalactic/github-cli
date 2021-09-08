@@ -15,6 +15,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/cli/cli/v2/internal/config"
+	"github.com/cli/cli/v2/internal/ghrepo"
 	"github.com/cli/cli/v2/pkg/extensions"
 	"github.com/cli/cli/v2/pkg/findsh"
 	"github.com/cli/safeexec"
@@ -172,7 +173,12 @@ func (m *Manager) InstallLocal(dir string) error {
 	return makeSymlink(dir, targetLink)
 }
 
-func (m *Manager) Install(cloneURL string, stdout, stderr io.Writer) error {
+func (m *Manager) InstallBin(repo ghrepo.Interface) error {
+	// TODO
+	return nil
+}
+
+func (m *Manager) InstallGit(cloneURL string, stdout, stderr io.Writer) error {
 	exe, err := m.lookPath("git")
 	if err != nil {
 		return err

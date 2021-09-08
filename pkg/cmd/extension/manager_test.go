@@ -190,13 +190,13 @@ func TestManager_Upgrade_NoExtensions(t *testing.T) {
 	assert.Equal(t, "", stderr.String())
 }
 
-func TestManager_Install(t *testing.T) {
+func TestManager_InstallGit(t *testing.T) {
 	tempDir := t.TempDir()
 	m := newTestManager(tempDir)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	err := m.Install("https://github.com/owner/gh-some-ext.git", stdout, stderr)
+	err := m.InstallGit("https://github.com/owner/gh-some-ext.git", stdout, stderr)
 	assert.NoError(t, err)
 	assert.Equal(t, fmt.Sprintf("[git clone https://github.com/owner/gh-some-ext.git %s]\n", filepath.Join(tempDir, "extensions", "gh-some-ext")), stdout.String())
 	assert.Equal(t, "", stderr.String())
