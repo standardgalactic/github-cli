@@ -203,9 +203,12 @@ func (m *Manager) InstallBin(client *http.Client, repo ghrepo.Interface) error {
 			arch, repo.RepoOwner(), repo.RepoName(), arch)
 	}
 
+	// TODO create directory
+	// TODO create manifest file
+	// TODO download binary and save as gh-foo
+
 	fmt.Println("BIN INSTALL")
 
-	// TODO
 	return nil
 }
 
