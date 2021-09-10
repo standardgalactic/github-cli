@@ -105,6 +105,14 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 					return err
 				}
 
+				isBin, err := isBinExtension(repo)
+				if err != err {
+					return fmt.Errorf("could not check for binary extension: %w", err)
+				}
+				if isBin {
+					return m.InstallBin(repo)
+				}
+
 				cfg, err := f.Config()
 				if err != nil {
 					return err
@@ -218,6 +226,12 @@ func checkValidExtension(rootCmd *cobra.Command, m extensions.ExtensionManager, 
 	}
 
 	return nil
+}
+
+func isBinExtension(repo ghrepo.Interface) (isBin bool, err error) {
+	// TODO
+	isBin = false
+	return
 }
 
 func normalizeExtensionSelector(n string) string {
