@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"runtime"
 	"strings"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/cli/cli/v2/api"
 	"github.com/cli/cli/v2/git"
 	"github.com/cli/cli/v2/internal/ghrepo"
-	"github.com/cli/cli/v2/pkg/cmd/release/shared"
 	"github.com/cli/cli/v2/pkg/cmdutil"
 	"github.com/cli/cli/v2/pkg/extensions"
 	"github.com/cli/cli/v2/utils"
@@ -114,13 +113,22 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("could not make http client: %w", err)
 				}
+				client = api.NewCachedClient(client, time.Second*30)
 
 				isBin, err := isBinExtension(client, repo)
 				if err != nil {
 					return fmt.Errorf("could not check for binary extension: %w", err)
 				}
 				if isBin {
-					return m.InstallBin(repo)
+					return m.InstallBin(client, repo)
+				}
+
+				hs, err := hasScript(client, repo)
+				if err != nil {
+					return err
+				}
+				if !hs {
+					return errors.New("extension is uninstallable: missing executable")
 				}
 
 				cfg, err := f.Config()
@@ -239,9 +247,12 @@ func checkValidExtension(rootCmd *cobra.Command, m extensions.ExtensionManager, 
 }
 
 func isBinExtension(client *http.Client, repo ghrepo.Interface) (isBin bool, err error) {
-	var r *shared.Release
-	// TODO probably shouldn't do this
-	r, err = shared.FetchLatestRelease(client, repo)
+	hs, err := hasScript(client, repo)
+	if err != nil || hs {
+		return
+	}
+
+	_, err = fetchLatestRelease(client, repo)
 	if err != nil {
 		httpErr, ok := err.(api.HTTPError)
 		if ok && httpErr.StatusCode == 404 {
@@ -251,17 +262,7 @@ func isBinExtension(client *http.Client, repo ghrepo.Interface) (isBin bool, err
 		return
 	}
 
-	arch := runtime.GOARCH
-
-	for _, a := range r.Assets {
-		if strings.HasSuffix(a.Name, arch) {
-			isBin = true
-			return
-		}
-	}
-
-	// TODO should return enough info to download the asset to avoid re-querying
-
+	isBin = true
 	return
 }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -173,8 +174,37 @@ func (m *Manager) InstallLocal(dir string) error {
 	return makeSymlink(dir, targetLink)
 }
 
-func (m *Manager) InstallBin(repo ghrepo.Interface) error {
+func (m *Manager) InstallBin(client *http.Client, repo ghrepo.Interface) error {
+	var r *release
+	r, err := fetchLatestRelease(client, repo)
+	if err != nil {
+		return err
+	}
+
+	arch := runtime.GOARCH
+	found := false
+	for _, a := range r.Assets {
+		if strings.HasSuffix(a.Name, arch) {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		// TODO which
+		//	escaped := url.QueryEscape(fmt.Sprintf("support %s", arch))
+		//	return fmt.Errorf(
+		//		"%s unsupported for %s. Open an issue: https://%s/%s/%s/issues/new?title=%s",
+		//		repo.RepoName(), arch,
+		//		repo.RepoHost(), repo.RepoOwner(), repo.RepoName(),
+		//		escaped)
+		return fmt.Errorf("%s unsupported for %s. Open an issue: `gh issue create -R%s/%s -t'Support %s'`",
+			repo.RepoName(),
+			arch, repo.RepoOwner(), repo.RepoName(), arch)
+	}
+
 	fmt.Println("BIN INSTALL")
+
 	// TODO
 	return nil
 }

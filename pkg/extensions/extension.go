@@ -2,6 +2,7 @@ package extensions
 
 import (
 	"io"
+	"net/http"
 
 	"github.com/cli/cli/v2/internal/ghrepo"
 )
@@ -21,7 +22,7 @@ type Extension interface {
 type ExtensionManager interface {
 	List(includeMetadata bool) []Extension
 	InstallGit(url string, stdout, stderr io.Writer) error
-	InstallBin(repo ghrepo.Interface) error
+	InstallBin(client *http.Client, repo ghrepo.Interface) error
 	InstallLocal(dir string) error
 	Upgrade(name string, force bool, stdout, stderr io.Writer) error
 	Remove(name string) error

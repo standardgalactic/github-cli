@@ -6,6 +6,7 @@ package extensions
 import (
 	"github.com/cli/cli/v2/internal/ghrepo"
 	"io"
+	"net/http"
 	"sync"
 )
 
@@ -25,7 +26,7 @@ var _ ExtensionManager = &ExtensionManagerMock{}
 // 			DispatchFunc: func(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) (bool, error) {
 // 				panic("mock out the Dispatch method")
 // 			},
-// 			InstallBinFunc: func(repo ghrepo.Interface) error {
+// 			InstallBinFunc: func(client *http.Client, repo ghrepo.Interface) error {
 // 				panic("mock out the InstallBin method")
 // 			},
 // 			InstallGitFunc: func(url string, stdout io.Writer, stderr io.Writer) error {
@@ -57,7 +58,7 @@ type ExtensionManagerMock struct {
 	DispatchFunc func(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) (bool, error)
 
 	// InstallBinFunc mocks the InstallBin method.
-	InstallBinFunc func(repo ghrepo.Interface) error
+	InstallBinFunc func(client *http.Client, repo ghrepo.Interface) error
 
 	// InstallGitFunc mocks the InstallGit method.
 	InstallGitFunc func(url string, stdout io.Writer, stderr io.Writer) error
@@ -94,6 +95,8 @@ type ExtensionManagerMock struct {
 		}
 		// InstallBin holds details about calls to the InstallBin method.
 		InstallBin []struct {
+			// Client is the client argument value.
+			Client *http.Client
 			// Repo is the repo argument value.
 			Repo ghrepo.Interface
 		}
@@ -218,29 +221,33 @@ func (mock *ExtensionManagerMock) DispatchCalls() []struct {
 }
 
 // InstallBin calls InstallBinFunc.
-func (mock *ExtensionManagerMock) InstallBin(repo ghrepo.Interface) error {
+func (mock *ExtensionManagerMock) InstallBin(client *http.Client, repo ghrepo.Interface) error {
 	if mock.InstallBinFunc == nil {
 		panic("ExtensionManagerMock.InstallBinFunc: method is nil but ExtensionManager.InstallBin was just called")
 	}
 	callInfo := struct {
-		Repo ghrepo.Interface
+		Client *http.Client
+		Repo   ghrepo.Interface
 	}{
-		Repo: repo,
+		Client: client,
+		Repo:   repo,
 	}
 	mock.lockInstallBin.Lock()
 	mock.calls.InstallBin = append(mock.calls.InstallBin, callInfo)
 	mock.lockInstallBin.Unlock()
-	return mock.InstallBinFunc(repo)
+	return mock.InstallBinFunc(client, repo)
 }
 
 // InstallBinCalls gets all the calls that were made to InstallBin.
 // Check the length with:
 //     len(mockedExtensionManager.InstallBinCalls())
 func (mock *ExtensionManagerMock) InstallBinCalls() []struct {
-	Repo ghrepo.Interface
+	Client *http.Client
+	Repo   ghrepo.Interface
 } {
 	var calls []struct {
-		Repo ghrepo.Interface
+		Client *http.Client
+		Repo   ghrepo.Interface
 	}
 	mock.lockInstallBin.RLock()
 	calls = mock.calls.InstallBin
