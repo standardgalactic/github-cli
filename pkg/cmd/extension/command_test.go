@@ -39,11 +39,11 @@ func TestNewCmdExtension(t *testing.T) {
 				em.ListFunc = func(bool) []extensions.Extension {
 					return []extensions.Extension{}
 				}
-				em.InstallFunc = func(s string, out, errOut io.Writer) error {
+				em.InstallGitFunc = func(s string, out, errOut io.Writer) error {
 					return nil
 				}
 				return func(t *testing.T) {
-					installCalls := em.InstallCalls()
+					installCalls := em.InstallGitCalls()
 					assert.Equal(t, 1, len(installCalls))
 					assert.Equal(t, "https://github.com/owner/gh-some-ext.git", installCalls[0].URL)
 					listCalls := em.ListCalls()
