@@ -174,6 +174,7 @@ func (m *Manager) InstallLocal(dir string) error {
 }
 
 func (m *Manager) InstallBin(repo ghrepo.Interface) error {
+	fmt.Println("BIN INSTALL")
 	// TODO
 	return nil
 }

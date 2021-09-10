@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -250,9 +251,17 @@ func isBinExtension(client *http.Client, repo ghrepo.Interface) (isBin bool, err
 		return
 	}
 
-	fmt.Printf("DBG %#v\n", r)
+	arch := runtime.GOARCH
 
-	// TODO confirm asset name in release
+	for _, a := range r.Assets {
+		if strings.HasSuffix(a.Name, arch) {
+			isBin = true
+			return
+		}
+	}
+
+	// TODO should return enough info to download the asset to avoid re-querying
+
 	return
 }
 
