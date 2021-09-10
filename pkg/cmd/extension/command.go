@@ -3,12 +3,15 @@ package extension
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/cli/cli/v2/api"
 	"github.com/cli/cli/v2/git"
 	"github.com/cli/cli/v2/internal/ghrepo"
+	"github.com/cli/cli/v2/pkg/cmd/release/shared"
 	"github.com/cli/cli/v2/pkg/cmdutil"
 	"github.com/cli/cli/v2/pkg/extensions"
 	"github.com/cli/cli/v2/utils"
@@ -102,11 +105,17 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 					return err
 				}
 				if err := checkValidExtension(cmd.Root(), m, repo.RepoName()); err != nil {
+					// TODO i feel like this should check for a gh-foo script
 					return err
 				}
 
-				isBin, err := isBinExtension(repo)
-				if err != err {
+				client, err := f.HttpClient()
+				if err != nil {
+					return fmt.Errorf("could not make http client: %w", err)
+				}
+
+				isBin, err := isBinExtension(client, repo)
+				if err != nil {
 					return fmt.Errorf("could not check for binary extension: %w", err)
 				}
 				if isBin {
@@ -228,9 +237,22 @@ func checkValidExtension(rootCmd *cobra.Command, m extensions.ExtensionManager, 
 	return nil
 }
 
-func isBinExtension(repo ghrepo.Interface) (isBin bool, err error) {
-	// TODO
-	isBin = false
+func isBinExtension(client *http.Client, repo ghrepo.Interface) (isBin bool, err error) {
+	var r *shared.Release
+	// TODO probably shouldn't do this
+	r, err = shared.FetchLatestRelease(client, repo)
+	if err != nil {
+		httpErr, ok := err.(api.HTTPError)
+		if ok && httpErr.StatusCode == 404 {
+			err = nil
+			return
+		}
+		return
+	}
+
+	fmt.Printf("DBG %#v\n", r)
+
+	// TODO confirm asset name in release
 	return
 }
 
