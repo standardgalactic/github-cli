@@ -191,13 +191,6 @@ func (m *Manager) InstallBin(client *http.Client, repo ghrepo.Interface) error {
 	}
 
 	if !found {
-		// TODO which
-		//	escaped := url.QueryEscape(fmt.Sprintf("support %s", arch))
-		//	return fmt.Errorf(
-		//		"%s unsupported for %s. Open an issue: https://%s/%s/%s/issues/new?title=%s",
-		//		repo.RepoName(), arch,
-		//		repo.RepoHost(), repo.RepoOwner(), repo.RepoName(),
-		//		escaped)
 		return fmt.Errorf("%s unsupported for %s. Open an issue: `gh issue create -R%s/%s -t'Support %s'`",
 			repo.RepoName(),
 			arch, repo.RepoOwner(), repo.RepoName(), arch)
